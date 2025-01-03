@@ -1,26 +1,53 @@
 <template>
   <div class="books-page">
-    <header>
-      <h1>Książki</h1>
-    </header>
+    <h2>Książki</h2>
 
-    <main>
-      <!-- Formularz dodawania książki -->
-      <section class="add-book">
-        <book-form @add-book="addBook"></book-form>
-      </section>
+    <!-- Komponent formularza: BookForm -->
+    <book-form @add-book="addBook"></book-form>
 
-      <!-- Lista książek -->
-      <section class="books-list">
+    <!-- Kontrolki paginacji (zmiana rozmiaru strony) -->
+    <div class="page-size-select">
+      <label for="pageSizeSelect">Ilość książek na stronie:</label>
+      <select id="pageSizeSelect" v-model="pageSize" @change="onPageSizeChange">
+        <option :value="5">5</option>
+        <option :value="10">10</option>
+        <option :value="20">20</option>
+      </select>
+    </div>
+
+    <!-- Sekcja ładowania / listy -->
+    <div v-if="loading">Ładowanie książek...</div>
+    <div v-else>
+      <div v-if="books.length === 0">Brak książek</div>
+      <div v-else class="books-list">
         <book-card
             v-for="book in books"
             :key="book.id"
             :book="book"
-            @edit-book="editBook"
+            @update-book="updateBook"
             @delete-book="deleteBook"
         ></book-card>
-      </section>
-    </main>
+      </div>
+    </div>
+
+    <!-- Nawigacja po stronach -->
+    <div v-if="!loading && totalPages > 1" class="pagination">
+      <button
+          :disabled="currentPage === 0"
+          @click="prevPage"
+      >
+        Poprzednia
+      </button>
+
+      <span>Strona {{ currentPage + 1 }} z {{ totalPages }}</span>
+
+      <button
+          :disabled="currentPage + 1 === totalPages"
+          @click="nextPage"
+      >
+        Następna
+      </button>
+    </div>
   </div>
 </template>
 
@@ -32,50 +59,100 @@ export default {
   name: 'Books',
   components: {
     BookForm,
-    BookCard,
+    BookCard
   },
   data() {
     return {
-      books: [], // Lista książek
+      books: [],
       loading: true,
+      // PAGINACJA
+      currentPage: 0,
+      pageSize: 5,
+      totalPages: 0
     };
   },
   mounted() {
     this.fetchBooks();
   },
   methods: {
+    // 1. Pobranie listy książek (z parametrami page i size)
     fetchBooks() {
-      fetch("/api/books")
+      const url = `/api/books?page=${this.currentPage}&size=${this.pageSize}`;
+      fetch(url)
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             this.books = data.content;
+            this.totalPages = data.totalPages;
+            this.currentPage = data.number;
             this.loading = false;
           })
           .catch(error => {
-            console.log("Błąd podczas pobierania książek:", error);
+            console.error('Błąd podczas pobierania książek:', error);
             this.loading = false;
           });
     },
-    addBook(newBook) {
-      // Przykładowe dodawanie książki do listy
-      this.books.push({
-        id: Date.now(), // Tymczasowy ID (w realnej aplikacji ID będzie nadawane przez backend)
-        ...newBook,
-      });
+    // 2. Obsługa zmiany rozmiaru strony
+    onPageSizeChange() {
+      this.currentPage = 0;
+      this.fetchBooks();
     },
-    editBook(updatedBook) {
-      // Aktualizacja książki w liście
-      const index = this.books.findIndex((book) => book.id === updatedBook.id);
-      if (index !== -1) {
-        this.books.splice(index, 1, updatedBook);
+    // 3. Nawigacja stronicowania
+    prevPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+        this.fetchBooks();
       }
     },
-    deleteBook(bookId) {
-      // Usuwanie książki z listy
-      this.books = this.books.filter((book) => book.id !== bookId);
+    nextPage() {
+      if (this.currentPage < this.totalPages - 1) {
+        this.currentPage++;
+        this.fetchBooks();
+      }
     },
-  },
+
+    // Operacje CRUD (bez zmian):
+    addBook(bookData) {
+      fetch('/api/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookData)
+      })
+          .then(response => response.json())
+          .then(newBook => {
+            this.books.push(newBook);
+          })
+          .catch(error => console.error('Błąd podczas dodawania książki:', error));
+    },
+    updateBook(updatedBook) {
+      fetch(`/api/books/${updatedBook.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedBook)
+      })
+          .then(response => {
+            if (response.ok) {
+              const index = this.books.findIndex(b => b.id === updatedBook.id);
+              if (index !== -1) {
+                this.books.splice(index, 1, updatedBook);
+              }
+            } else {
+              throw new Error('Nie udało się zaktualizować książki');
+            }
+          })
+          .catch(error => console.error('Błąd podczas aktualizowania książki:', error));
+    },
+    deleteBook(bookId) {
+      fetch(`/api/books/${bookId}`, { method: 'DELETE' })
+          .then(response => {
+            if (response.ok) {
+              this.books = this.books.filter(book => book.id !== bookId);
+            } else {
+              throw new Error('Nie udało się usunąć książki');
+            }
+          })
+          .catch(error => console.error('Błąd podczas usuwania książki:', error));
+    }
+  }
 };
 </script>
 
@@ -85,13 +162,19 @@ export default {
   font-family: Arial, sans-serif;
 }
 
-.add-book {
-  margin-bottom: 2em;
-}
-
 .books-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5em;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.pagination {
+  margin-top: 1em;
+}
+
+.page-size-select {
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 </style>
