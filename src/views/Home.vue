@@ -2,6 +2,7 @@
   <div>
     <header>
       <h1>{{ title }}</h1>
+      <!-- Nowa sekcja z przyciskami logowania i rejestracji -->
     </header>
 
     <main>
@@ -52,6 +53,28 @@ export default {
 </script>
 
 <style scoped>
+.auth-buttons {
+  display: flex;
+  gap: 1em; /* odstęp między przyciskami */
+}
+
+.login-btn {
+  background-color: #28a745; /* Zielony dla wyróżnienia */
+}
+
+.login-btn:hover {
+  background-color: #218838;
+}
+
+.register-btn {
+  background-color: #ffca28; /* Żółty odcień */
+  color: #333; /* Ciemniejszy tekst */
+}
+
+.register-btn:hover {
+  background-color: #ffc107;
+  color: #333;
+}
 .welcome {
   margin-bottom: 2em;
   text-align: center;
@@ -93,7 +116,7 @@ export default {
 }
 
 .feature-card:hover {
-  transform: translateY(-5px); /* Subtelne unoszenie przy najechaniu */
+  transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 

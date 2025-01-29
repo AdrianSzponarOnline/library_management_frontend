@@ -108,6 +108,16 @@ export default {
     AuthorForm,
     CategoryForm
   },
+  props: {
+    bookToEdit: {
+      type: Object,
+      default: null
+    },
+    isEditing: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       isFormVisible: false, // Kontroluje widoczność formularza
@@ -120,9 +130,33 @@ export default {
       }
     };
   },
+  watch: {
+    // jeśli zmieni sie bookToEdit, zaktualizuj local this.book
+    bookToEdit: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.book = JSON.parse(JSON.stringify(newVal));
+          this.isFormVisible = true;
+        }else{
+          this.resetBook();
+        }
+      }
+    }
+  },
   methods: {
     toggleForm() {
       this.isFormVisible = !this.isFormVisible;
+      this.resetBook();
+    },
+    resetBook() {
+      this.book = {
+        title: '',
+        isbn: '',
+        year: '',
+        authors: [],
+        categories: []
+      };
     },
     handleAddAuthor(newAuthor) {
       this.book.authors.push(newAuthor);
@@ -138,16 +172,14 @@ export default {
     },
     onSubmitBook() {
       console.log('Dane książki do wysłania:', this.book);
-      this.$emit('add-book', { ...this.book });
-      // Reset książki i schowanie formularza
-      this.book = {
-        title: '',
-        isbn: '',
-        year: '',
-        authors: [],
-        categories: []
-      };
-      this.isFormVisible = false; // Zwiń formularz po dodaniu
+      if (this.isEditing) {
+        this.$emit('submit-updated-book', {...this.book});
+      }else {
+        this.$emit('add-book', {...this.book});
+        // Reset książki i schowanie formularza
+      }
+      this.isFormVisible = false;// Zwiń formularz po dodaniu
+      this.resetBook();
     }
   }
 };

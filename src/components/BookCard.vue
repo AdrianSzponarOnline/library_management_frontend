@@ -1,7 +1,5 @@
 <template>
-  <!-- Główna karta z analogicznym stylem jak "author-card" -->
   <div class="book-card">
-    <!-- Sekcja obrazu (placeholder, gdy brak okładki) -->
     <div class="image-placeholder">
       <img
           v-if="book.coverUrl"
@@ -14,22 +12,11 @@
       </div>
     </div>
 
-    <!-- Pozostałe dane książki -->
     <h3>{{ book.title }}</h3>
-    <p>
-      <strong>Autorzy:</strong>
-      {{ authorsList }}
-    </p>
-    <p>
-      <strong>Rok wydania:</strong>
-      {{ book.year }}
-    </p>
-    <p>
-      <strong>Kategorie:</strong>
-      {{ categoriesList }}
-    </p>
+    <p><strong>Autorzy:</strong> {{ authorsList }}</p>
+    <p><strong>Rok wydania:</strong> {{ book.year }}</p>
+    <p><strong>Kategorie:</strong>{{ categoryList}}</p>
 
-    <!-- Przyciski akcji: identyczne style jak w AuthorCard -->
     <div class="button-group">
       <button class="edit-btn" @click="$emit('edit-book', book)">Edytuj</button>
       <button class="delete-btn" @click="$emit('delete-book', book.id)">Usuń</button>
@@ -43,8 +30,8 @@ export default {
   props: {
     book: {
       type: Object,
-      required: true,
-    },
+      required: true
+    }
   },
   computed: {
     authorsList() {
@@ -55,22 +42,21 @@ export default {
           .map(author => `${author.firstName} ${author.lastName}`)
           .join(', ');
     },
-    categoriesList() {
+    categoryList() {
+      // Upewnij się, że w obiekcie `book` klucz nazywa się `categories`
       if (!this.book.categories || !this.book.categories.length) {
         return 'Nie podano';
       }
       return this.book.categories
           .map(cat => cat.categoryName)
           .join(', ');
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style scoped>
-/* Identyczny styl jak w AuthorCard, zmieniamy tylko nazwę klasy na .book-card */
 
-/* Podstawowy wygląd karty */
 .book-card {
   flex: 1 1 300px; /* Każda karta ma szerokość ok. 300px, ale może się dostosować */
   border: 1px solid #ddd;

@@ -82,18 +82,9 @@ export default {
       fetch(url)
           .then(response => response.json())
           .then(data => {
-            // Zakładamy, że backend zwraca strukturę:
-            // {
-            //   content: [...],
-            //   totalPages: X,
-            //   number: Y,   (aktualny numer strony wg. Spring Data)
-            //   ...
-            // }
             this.authors = data.content;
             this.totalPages = data.totalPages;
-            // Czasem w Spring Data jest `data.number` jako aktualna strona
-            // Możesz też ustawić `this.currentPage = data.number;`
-            // aby zawsze mieć spójność z tym co zwraca API
+
             this.loading = false;
           })
           .catch(error => {
@@ -126,6 +117,7 @@ export default {
       fetch('/api/authors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(authorData)
       })
           .then(response => response.json())
@@ -140,6 +132,7 @@ export default {
       fetch(`/api/authors/${updatedAuthor.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(updatedAuthor)
       })
           .then(response => {
@@ -157,7 +150,7 @@ export default {
     },
 
     deleteAuthor(authorId) {
-      fetch(`/api/authors/${authorId}`, { method: 'DELETE' })
+      fetch(`/api/authors/${authorId}`, { method: 'DELETE', credentials: 'include', })
           .then(response => {
             if (response.ok) {
               // Usuń autora z listy

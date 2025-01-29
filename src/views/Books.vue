@@ -3,7 +3,12 @@
     <h2>Książki</h2>
 
     <!-- Komponent formularza: BookForm -->
-    <book-form @add-book="addBook"></book-form>
+    <book-form
+        :book-to-edit="bookToEdit"
+        is-editing="isEditing"
+        @add-book="addBook"
+        @submit-updated-book="updateBook"
+    ></book-form>
 
     <!-- Kontrolki paginacji (zmiana rozmiaru strony) -->
     <div class="page-size-select">
@@ -25,6 +30,7 @@
             :key="book.id"
             :book="book"
             @update-book="updateBook"
+            @edit-book="editBook"
             @delete-book="deleteBook"
         ></book-card>
       </div>
@@ -68,7 +74,10 @@ export default {
       // PAGINACJA
       currentPage: 0,
       pageSize: 5,
-      totalPages: 0
+      totalPages: 0,
+
+      bookToEdit: null,
+      isEditing: false,
     };
   },
   mounted() {
@@ -114,6 +123,7 @@ export default {
     addBook(bookData) {
       fetch('/api/books', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookData)
       })
@@ -126,6 +136,7 @@ export default {
     updateBook(updatedBook) {
       fetch(`/api/books/${updatedBook.id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedBook)
       })
@@ -139,10 +150,19 @@ export default {
               throw new Error('Nie udało się zaktualizować książki');
             }
           })
-          .catch(error => console.error('Błąd podczas aktualizowania książki:', error));
+          .catch(error => console.error('Błąd podczas aktualizowania książki:', error))
+          // Po udanej (lub nie) próbie aktualizacji można wyczyścić stan edycji:
+          .finally(() => {
+            this.bookToEdit = null;
+            this.isEditing = false;
+          });
+    },
+    editBook(book) {
+      this.isEditing = true;
+      this.bookToEdit = book;
     },
     deleteBook(bookId) {
-      fetch(`/api/books/${bookId}`, { method: 'DELETE' })
+      fetch(`/api/books/${bookId}`, { method: 'DELETE',credentials: 'include', })
           .then(response => {
             if (response.ok) {
               this.books = this.books.filter(book => book.id !== bookId);
