@@ -8,12 +8,7 @@
       <div class="auth-buttons" v-if="!isLoggedIn">
       <router-link :to="{ name: 'login' }" class="button">Zaloguj</router-link>
       <router-link :to="{ name: 'register' }" class="button">Zarejestruj</router-link>
-
     </div>
-      <!-- Przycisk Wyloguj pojawia się TYLKO, jeśli user jest zalogowany -->
-      <div v-else>
-        <button class="button" @click="logoutUser">Wyloguj</button>
-      </div>
       <router-link :to="{ name: 'home' }" :class="{ active: activePage === 'home' }">Strona Główna</router-link>
       <router-link :to="{ name: 'authors' }" :class="{ active: activePage === 'authors' }">Autorzy</router-link>
       <router-link :to="{ name: 'books' }" :class="{ active: activePage === 'books' }">Książki</router-link>
@@ -51,33 +46,6 @@ export default {
      if (storedValue === 'true') {
        this.isLoggedIn = true;
      }
-  },
-  methods: {
-    async logoutUser() {
-      try {
-        // 1. Wywołaj endpoint do wylogowania na backendzie
-        const response = await fetch("/api/logout", {
-          method: "POST",
-          credentials: "include"  // pamiętaj o cookies
-        });
-
-        // Jeśli odpowiedź jest OK, to unieważniono sesję
-        if (!response.ok) {
-          throw new Error("Błąd podczas wylogowania");
-        }
-
-        // 2. Usuń informację o zalogowaniu z localStorage
-        localStorage.removeItem('isLoggedIn');
-
-        // 3. Zmień stan w komponencie
-        this.isLoggedIn = false;
-
-        // (Opcjonalnie) przekieruj na home lub login
-        this.$router.push({name: "home"});
-      } catch (error) {
-        console.error("Błąd przy wylogowaniu:", error);
-      }
-    }
   }
 }
 </script>

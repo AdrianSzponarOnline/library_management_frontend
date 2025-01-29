@@ -30,17 +30,7 @@
         Date of birth:
         <input type="date" v-model="editableAuthor.dateOfBirth" />
       </label>
-      <form @submit.prevent="uploadProfileImage" enctype="multipart/form-data">
-        <label>
-          Wybierz zdjęcie:
-          <input type="file" @change="handleImageChange" />
-        </label>
-        <label>
-          Opis zdjęcia:
-          <input type="text" v-model="caption" placeholder="Dodaj opis (opcjonalnie)" />
-        </label>
-        <button type="submit" class="upload-btn">Dodaj zdjęcie</button>
-      </form>
+
       <!-- Pole do edycji URL-a zdjęcia w obiekcie imageMetadata -->
       <label>
         Image URL:
@@ -90,7 +80,7 @@ export default {
       this.editableAuthor = JSON.parse(JSON.stringify(this.author));
       if (!this.editableAuthor.imageMetadata) {
         this.editableAuthor.imageMetadata = {};
-      }
+      }8778
     },
     saveEdit() {
       // Emituj zaktualizowane dane autora
@@ -102,39 +92,6 @@ export default {
     },
     deleteAuthor() {
       this.$emit('delete-author', this.author.id);
-    },
-    handleImageChange(event) {
-      this.selectedImage = event.target.files[0];
-    },
-    async uploadProfileImage() {
-      if (!this.selectedImage) {
-        alert('Wybierz zdjęcie przed przesłaniem.');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('image', this.selectedImage);
-      if (this.caption) {
-        formData.append('caption', this.caption);
-      }
-
-      try {
-        const response = await fetch(`/api/authors/${this.author.id}/profile-image`, {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Błąd przesyłania obrazu.');
-        }
-
-        alert('Zdjęcie zostało pomyślnie przesłane!');
-        this.$emit('refresh-author'); // Opcjonalnie: odśwież autora, aby pokazać nowe zdjęcie
-      } catch (error) {
-        console.error('Błąd podczas przesyłania obrazu:', error);
-        alert('Nie udało się przesłać zdjęcia.');
-      }
     }
   }
 };
@@ -151,7 +108,7 @@ export default {
   transition: transform 0.3s, box-shadow 0.3s, height 0.3s ease;
 }
 
-.author-card.editing-mode {
+.author-car8d.editing-mode {
   min-height: auto;
   height: auto;
 }
