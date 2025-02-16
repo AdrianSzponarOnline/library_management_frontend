@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+
 export default {
   name: "Login",
   data() {
@@ -45,37 +47,27 @@ export default {
     };
   },
   methods: {
+    // Make the store's 'login' action directly available as this.login()
+    ...mapActions(["login"]),
+
     async loginUser() {
       this.errorMessage = "";
       this.successMessage = "";
 
       try {
-        const response = await fetch("/api/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          credentials: "include", // klucz do sesji w cookies
-          body: JSON.stringify({
-            username: this.username,
-            password: this.password
-          })
+        // 1. Call the Vuex action (which does the fetch inside the store)
+        const successMsg = await this.login({
+          username: this.username,
+          password: this.password
         });
 
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(errText || "Login failed.");
-        }
-
-        // Sukces -> odczytujemy wiadomość
-        const successMsg = await response.text();
+        // 2. successMsg is what the store action returned (the server text)
         this.successMessage = successMsg || "Zalogowano pomyślnie!";
 
-        localStorage.setItem('isLoggedIn', true)
-        // Przekierowanie do 'home'
+        // 3. Go to home (or wherever you want)
         this.$router.push({name: "home"});
-
       } catch (error) {
+        // 4. If fetch or login failed, set the error message
         this.errorMessage = error.message || "Wystąpił błąd przy logowaniu.";
       }
     }
@@ -84,6 +76,7 @@ export default {
 </script>
 
 <style scoped>
+/* your styles here */
 .login-container {
   max-width: 400px;
   margin: 2em auto;
@@ -93,46 +86,5 @@ export default {
   background: #fafafa;
 }
 
-.login-container h2 {
-  text-align: center;
-  margin-bottom: 1em;
-}
-
-.form-group {
-  margin-bottom: 1em;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5em;
-  font-weight: bold;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.5em;
-  box-sizing: border-box;
-}
-
-.error-message {
-  color: red;
-  margin-bottom: 1em;
-  font-weight: bold;
-}
-
-button {
-  width: 100%;
-  padding: 0.8em;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1em;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
+/* ... rest of your styles ... */
 </style>

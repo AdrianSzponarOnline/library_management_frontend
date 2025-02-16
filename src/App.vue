@@ -6,9 +6,15 @@
 
     <nav>
       <div class="auth-buttons" v-if="!isLoggedIn">
-      <router-link :to="{ name: 'login' }" class="button">Zaloguj</router-link>
-      <router-link :to="{ name: 'register' }" class="button">Zarejestruj</router-link>
-    </div>
+        <router-link :to="{ name: 'login' }" :class="{ active: activePage === 'login'}">Zaloguj</router-link>
+        <router-link :to="{ name: 'register' }" :class="{ active: activePage === 'register'}">Zarejestruj</router-link>
+      </div>
+
+
+      <div class="auth-buttons" v-else>
+        <button @click="logout">Wyloguj</button>
+      </div>
+
       <router-link :to="{ name: 'home' }" :class="{ active: activePage === 'home' }">Strona Główna</router-link>
       <router-link :to="{ name: 'authors' }" :class="{ active: activePage === 'authors' }">Autorzy</router-link>
       <router-link :to="{ name: 'books' }" :class="{ active: activePage === 'books' }">Książki</router-link>
@@ -26,6 +32,8 @@
 </template>
 
 <script>
+import {mapState, mapActions} from "vuex";
+
 export default {
   name: 'App',
   data() {
@@ -33,7 +41,6 @@ export default {
       title: "Zarządzanie Biblioteką",
       activePage: 'home',
       year: new Date().getFullYear(),
-      isLoggedIn: false
     }
   },
   watch: {
@@ -41,11 +48,20 @@ export default {
       this.activePage = newVal;
     }
   },
-  created() {
-     const storedValue = localStorage.getItem('isLoggedIn');
-     if (storedValue === 'true') {
-       this.isLoggedIn = true;
-     }
+  computed: {
+    ...mapState(['isLoggedIn'])
+  },
+  methods: {
+    ...mapActions({
+      logoutAction: 'logout',
+    }),
+    async logout() {
+      try {
+        await this.logoutAction();
+      }catch(err) {
+        console.log('Logout error', err);
+      }
+    }
   }
 }
 </script>
@@ -113,6 +129,7 @@ nav a:hover {
   color: #fff;
   transform: scale(1.1);
 }
+
 nav a.active {
   background: rgba(255, 255, 255, 0.5);
   font-weight: bold;

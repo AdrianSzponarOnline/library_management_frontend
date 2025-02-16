@@ -56,12 +56,12 @@ export default {
     };
   },
   methods: {
+    //  Wywołania backendu:
     async registerUser() {
       try {
-        // Przykład wywołania backendu:
         const response = await fetch('/api/register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             email: this.email,
             username: this.username,
@@ -69,16 +69,18 @@ export default {
           })
         });
 
-        if (!response.ok) {
+        if (!response.created) {
           throw new Error('Nie udało się zarejestrować użytkownika.');
         }
 
-        const data = await response.json();
+        // Pobieramy odpowiedź jako tekst
+        const text = await response.text();
+
+        // Jeśli odpowiedź nie jest pusta, spróbuj sparsować JSON
+        const data = text ? JSON.parse(text) : {};
+
         console.log('Zarejestrowano pomyślnie:', data);
-
-        // Po udanej rejestracji możesz np. przekierować do logowania:
-        this.$router.push({ name: 'login' });
-
+        this.$router.push({name: 'login'});
         alert(`Rejestracja użytkownika: ${this.username}, email: ${this.email}`);
       } catch (error) {
         this.errorMessage = error.message || 'Wystąpił błąd podczas rejestracji.';

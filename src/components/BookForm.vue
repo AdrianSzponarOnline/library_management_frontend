@@ -121,6 +121,7 @@ export default {
   data() {
     return {
       isFormVisible: false, // Kontroluje widoczność formularza
+      isEditingLocal: this.isEditing,
       book: {
         title: '',
         isbn: '',
@@ -132,6 +133,9 @@ export default {
   },
   watch: {
     // jeśli zmieni sie bookToEdit, zaktualizuj local this.book
+    isEditing(newVal) {
+      this.isEditingLocal = newVal
+    },
     bookToEdit: {
       immediate: true,
       handler(newVal) {
@@ -147,6 +151,7 @@ export default {
   methods: {
     toggleForm() {
       this.isFormVisible = !this.isFormVisible;
+      this.isEditingLocal = !this.isEditingLocal;
       this.resetBook();
     },
     resetBook() {
@@ -170,18 +175,19 @@ export default {
     removeCategory(index) {
       this.book.categories.splice(index, 1);
     },
-    onSubmitBook() {
-      console.log('Dane książki do wysłania:', this.book);
-      if (this.isEditing) {
-        this.$emit('submit-updated-book', {...this.book});
-      }else {
-        this.$emit('add-book', {...this.book});
-        // Reset książki i schowanie formularza
+      onSubmitBook() {
+        console.log('Dane książki do wysłania:', this.book);
+        if (this.isEditingLocal) {
+          this.$emit('submit-updated-book', { ...this.book });
+        } else {
+          this.$emit('add-book', { ...this.book });
+        }
+        this.isFormVisible = false;
+        this.resetBook();
       }
-      this.isFormVisible = false;// Zwiń formularz po dodaniu
-      this.resetBook();
+
+
     }
-  }
 };
 </script>
 

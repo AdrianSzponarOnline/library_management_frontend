@@ -5,10 +5,11 @@
     <!-- Komponent formularza: BookForm -->
     <book-form
         :book-to-edit="bookToEdit"
-        is-editing="isEditing"
+        :is-editing="isEditing"
         @add-book="addBook"
         @submit-updated-book="updateBook"
     ></book-form>
+
 
     <!-- Kontrolki paginacji (zmiana rozmiaru strony) -->
     <div class="page-size-select">
